@@ -5,13 +5,12 @@ grpc:
   port: 18063
 log:
   level: DEBUG
+  enable_console: true
+  log_path: ./logs
 metadata:
   grpcSrv: yes
 redis:
   addr: 127.0.0.1:6379
-mq:
-  addr:
-    - 127.0.0.1:9876
 # services name
 gatewayService: service.goim.gateway
 userService: service.goim.user

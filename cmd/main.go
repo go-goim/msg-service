@@ -1,20 +1,18 @@
-package main
+package cmd
 
 import (
 	"context"
 
-	"github.com/go-goim/core/pkg/cmd"
-	"github.com/go-goim/core/pkg/log"
-
 	messagev1 "github.com/go-goim/api/message/v1"
-
+	"github.com/go-goim/core/pkg/cmd"
 	"github.com/go-goim/core/pkg/graceful"
+	"github.com/go-goim/core/pkg/log"
 
 	"github.com/go-goim/msg-service/internal/app"
 	"github.com/go-goim/msg-service/internal/service"
 )
 
-func main() {
+func Main() {
 	if err := cmd.ParseFlags(); err != nil {
 		panic(err)
 	}

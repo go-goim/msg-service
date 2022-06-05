@@ -9,6 +9,11 @@ require (
 	github.com/go-redis/redis/v8 v8.11.5
 )
 
+replace (
+	github.com/go-goim/api => ../api
+	github.com/go-goim/core => ../core
+)
+
 require (
 	github.com/armon/go-metrics v0.0.0-20180917152333-f0300d1749da // indirect
 	github.com/cespare/xxhash/v2 v2.1.2 // indirect
