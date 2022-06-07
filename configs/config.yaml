@@ -1,4 +1,4 @@
-name: service.goim.msg
+name: goim.service.msg
 version: v0.0.0
 grpc:
   scheme: grpc
