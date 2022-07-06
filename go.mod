@@ -74,7 +74,7 @@ require (
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	gorm.io/driver/mysql v1.3.3 // indirect
-	gorm.io/gorm v1.23.6 // indirect
+	gorm.io/gorm v1.23.7 // indirect
 	stathat.com/c/consistent v1.0.0 // indirect
 )
 
