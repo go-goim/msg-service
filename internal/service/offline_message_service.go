@@ -30,7 +30,7 @@ func (o *OfflineMessageService) QueryOfflineMessage(ctx context.Context, req *me
 	log.Info("req=", req.String())
 
 	cnt, err := app.GetApplication().Redis.ZCount(ctx,
-		consts.GetUserOfflineQueueKey(req.GetUserId()),
+		consts.GetUserOfflineQueueKey(req.Uid),
 		// offset add 1 to skip the message user last online msg
 		strconv.FormatInt(req.GetLastMsgId()+1, 10),
 		"+inf").Result()
@@ -45,7 +45,7 @@ func (o *OfflineMessageService) QueryOfflineMessage(ctx context.Context, req *me
 	}
 
 	results, err := app.GetApplication().Redis.ZRangeByScoreWithScores(ctx,
-		consts.GetUserOfflineQueueKey(req.GetUserId()), &redisv8.ZRangeBy{
+		consts.GetUserOfflineQueueKey(req.Uid), &redisv8.ZRangeBy{
 			// offset add 1 to skip the message user last online msg
 			Min:    strconv.FormatInt(req.GetLastMsgId()+1, 10),
 			Max:    "+inf",

@@ -23,7 +23,7 @@ func Main() {
 	}
 
 	// register grpc
-	messagev1.RegisterOfflineMessageServer(application.GrpcSrv, &service.OfflineMessageService{})
+	messagev1.RegisterOfflineMessageServiceServer(application.GrpcSrv, &service.OfflineMessageService{})
 
 	if err = application.Run(); err != nil {
 		log.Error("application run error", "error", err)
