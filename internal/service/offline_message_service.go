@@ -3,17 +3,15 @@ package service
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"strconv"
 
 	redisv8 "github.com/go-redis/redis/v8"
 
-	responsepb "github.com/go-goim/api/transport/response"
-
+	"github.com/go-goim/api/errors"
+	messagev1 "github.com/go-goim/api/message/v1"
 	"github.com/go-goim/core/pkg/consts"
 	"github.com/go-goim/core/pkg/log"
-
-	messagev1 "github.com/go-goim/api/message/v1"
-
 	"github.com/go-goim/msg-service/internal/app"
 )
 
@@ -24,7 +22,7 @@ type OfflineMessageService struct {
 func (o *OfflineMessageService) QueryOfflineMessage(ctx context.Context, req *messagev1.QueryOfflineMessageReq) (
 	*messagev1.QueryOfflineMessageResp, error) {
 	rsp := &messagev1.QueryOfflineMessageResp{
-		Response: responsepb.Code_OK.BaseResponse(),
+		Error: errors.ErrorOK(),
 	}
 
 	log.Info("req=", req.String())
@@ -35,7 +33,7 @@ func (o *OfflineMessageService) QueryOfflineMessage(ctx context.Context, req *me
 		strconv.FormatInt(req.GetLastMsgId()+1, 10),
 		"+inf").Result()
 	if err != nil {
-		rsp.Response = responsepb.NewBaseResponseWithError(err)
+		rsp.Error = errors.NewErrorWithError(err)
 		return rsp, nil
 	}
 
@@ -53,7 +51,7 @@ func (o *OfflineMessageService) QueryOfflineMessage(ctx context.Context, req *me
 			Count:  int64(req.GetPageSize()),
 		}).Result()
 	if err != nil {
-		rsp.Response = responsepb.NewBaseResponseWithError(err)
+		rsp.Error = errors.NewErrorWithError(err)
 		return rsp, nil
 	}
 
@@ -62,7 +60,7 @@ func (o *OfflineMessageService) QueryOfflineMessage(ctx context.Context, req *me
 		str := result.Member.(string)
 		msg := new(messagev1.Message)
 		if err = json.Unmarshal([]byte(str), msg); err != nil {
-			rsp.Response = responsepb.NewBaseResponseWithError(err)
+			rsp.Error = errors.NewErrorWithError(err)
 			return rsp, nil
 		}
 
@@ -70,4 +68,56 @@ func (o *OfflineMessageService) QueryOfflineMessage(ctx context.Context, req *me
 	}
 
 	return rsp, nil
+}
+
+func (o *OfflineMessageService) ConfirmLastMstID(ctx context.Context, req *messagev1.ConfirmLastMsgIDReq) (
+	*messagev1.ConfirmLastMsgIDResp, error) {
+	rsp := &messagev1.ConfirmLastMsgIDResp{
+		Error: errors.ErrorOK(),
+	}
+
+	log.Info("req=", req.String())
+	id, err := zRemMsgAndGetLastOne(ctx, app.GetApplication().Redis,
+		consts.GetUserOfflineQueueKey(req.Uid), strconv.FormatInt(req.GetLastMsgId(), 10))
+	if err != nil {
+		rsp.Error = errors.NewErrorWithError(err)
+		return rsp, nil
+	}
+
+	rsp.LastMsgId = id
+	return rsp, nil
+
+}
+
+func zRemMsgAndGetLastOne(ctx context.Context, rdb *redisv8.Client, key, max string) (int64, error) {
+	results, err := rdb.TxPipelined(ctx, func(pp redisv8.Pipeliner) error {
+		pp.ZRemRangeByScore(ctx,
+			key,
+			"-inf",
+			max)
+		pp.ZRangeWithScores(ctx, key, 0, 0)
+		return nil
+	})
+	if err != nil {
+		return 0, err
+	}
+	if len(results) != 2 {
+		return 0, fmt.Errorf("invalid resp")
+	}
+
+	zsc, ok := results[1].(*redisv8.ZSliceCmd)
+	if !ok {
+		return 0, fmt.Errorf("invalid result")
+	}
+
+	zSliceResults, err := zsc.Result()
+	if err != nil {
+		return 0, err
+	}
+
+	if len(zSliceResults) == 0 {
+		return 0, fmt.Errorf("empty result")
+	}
+
+	return int64(zSliceResults[0].Score), nil
 }
