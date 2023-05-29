@@ -26,14 +26,3 @@ func GetHistoryMessageService() *HistoryMessageService {
 
 	return historyMessageService
 }
-
-//
-//func (s *HistoryMessageService) QuerySessionHistoryMessage(ctx context.Context, req *messagev1.QuerySessionHistoryMessageReq) (
-//	*messagev1.QuerySessionHistoryMessageResp, error) {
-//
-//}
-//
-//func (s *HistoryMessageService) SyncHistoryMessage(ctx context.Context, req *messagev1.SyncHistoryMessageReq) (
-//	*messagev1.SyncHistoryMessageResp, error) {
-//
-//}
